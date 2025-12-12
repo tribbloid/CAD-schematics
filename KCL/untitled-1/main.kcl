@@ -35,6 +35,7 @@ totalBodyLength = threadLength + transitionLength
 // Sketch 0: inlet annulus (start of straight threaded section)
 inletAnnulus0 = startSketchOn(XY)
   |> circle(center = [0, 0], radius = inletOuterDiameter / 2)
+  |> circle(center = [0, 0], radius = inletOuterDiameter / 3)
   |> subtract2d(tool = circle(center = [0, 0], radius = inletInnerDiameter / 2))
 
 // Sketch 1: end of straight threaded section (same diameters as inlet)
@@ -57,7 +58,7 @@ adapterBody = loft([
 // Add outlet flange: a ring added on the outlet end face
 flangeSketch = startSketchOn(adapterBody, face = END)
   |> circle(center = [0, 0], radius = flangeOuterDiameter / 2)
-  |> subtract2d(tool = circle(center = [0, 0], radius = outletOuterDiameter / 2))
+  |> subtract2d(tool = circle(center = [0, 0], radius = outletInnerDiameter / 2))
 adapterWithFlange = extrude(flangeSketch, length = flangeThickness)
 
 // -----------------------------------------------------------------------------

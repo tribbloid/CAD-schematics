@@ -1,0 +1,11 @@
+[settings.meta]
+id = "f2aa303e-b7f6-4c83-850a-807f1783607c"
+enable_zookeeper = true
+
+[settings.app]
+
+[settings.modeling]
+
+[settings.text_editor]
+
+[settings.command_bar]

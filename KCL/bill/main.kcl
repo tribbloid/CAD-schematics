@@ -1,0 +1,70 @@
+@settings(defaultLengthUnit = mm)
+
+// Herringbone gear with involute tooth profile
+fn herringboneGear(nTeeth, module, pressureAngle, helixAngle, gearHeight) {
+  // Calculate gear parameters
+  pitchDiameter = module * nTeeth
+  addendum = module
+  deddendum = 1.25 * module
+  baseDiameter = pitchDiameter * cos(pressureAngle)
+  tipDiameter = pitchDiameter + 2 * module
+
+  // Create a rotated gear sketch on an offset plane
+  fn herringboneGearSketch(offsetHeight) {
+    // Amount to rotate each planar sketch given helix angle and total gear height
+    helixCalc = acos(offsetHeight * tan(helixAngle) / (tipDiameter / 2))
+
+    // Involute tooth spanning from base diameter to tip diameter, patterned around center
+    herringboneGearSketch = startSketchOn(offsetPlane(XY, offset = offsetHeight))
+      |> startProfile(at = polar(angle = helixCalc, length = baseDiameter / 2))
+      |> involuteCircular(
+           startRadius = baseDiameter / 2,
+           endRadius = tipDiameter / 2,
+           angle = helixCalc,
+           tag = $seg01,
+         )
+      |> line(endAbsolute = polar(angle = 160deg / nTeeth + helixCalc, length = tipDiameter / 2))
+      |> involuteCircular(
+           startRadius = baseDiameter / 2,
+           endRadius = tipDiameter / 2,
+           angle = -(4 * atan(segEndY(seg01) / segEndX(seg01)) - (3 * helixCalc)),
+           reverse = true,
+         )
+      |> line(endAbsolute = polar(angle = 360deg / nTeeth + helixCalc, length = baseDiameter / 2))
+      |> patternCircular2d(
+           instances = nTeeth,
+           center = [0, 0],
+           arcDegrees = 360deg,
+           rotateDuplicates = true,
+         )
+      |> close()
+    return herringboneGearSketch
+  }
+
+  // Bottom profile
+  gearSketch001 = herringboneGearSketch(offsetHeight = 0)
+  // Middle profile rotated by helix (creates the herringbone)
+  gearSketch002 = herringboneGearSketch(offsetHeight = gearHeight / 2)
+  // Top profile mirroring bottom (via clone and translate)
+  gearSketch003 = clone(gearSketch001)
+    |> translate(z = gearHeight)
+
+  // Loft profiles to form double helical (herringbone) gear
+  return loft(
+    [
+      gearSketch001,
+      gearSketch002,
+      gearSketch003
+    ],
+    vDegree = 1,
+  )
+}
+
+// Parameters per request
+herringboneGear(
+  nTeeth = 19,
+  module = 2,
+  pressureAngle = 20deg,
+  helixAngle = 21.5deg,
+  gearHeight = 18,
+)
