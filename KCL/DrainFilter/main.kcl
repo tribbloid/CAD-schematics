@@ -1,0 +1,218 @@
+// Single-part drain / water intake filter
+// Nominal intake diameter: 1.000 in barrel OD
+// Top flange OD: 1.100 in
+// Depth: 1.000 in total height
+// Bottom inside and outside corner radii: 0.125 in
+// Bottom perforations: 19 round holes in a hex-packed pattern
+
+@settings(defaultLengthUnit = in)
+
+// --- Primary dimensions ---
+intakeDiameter = 1.000in
+flangeDiameter = 1.100in
+depth = 1.000in
+bottomFilletRadius = 0.125in
+
+// --- Manufacturing/detail assumptions, kept editable ---
+wallThickness = 0.070in
+bottomThickness = 0.160in
+flangeThickness = 0.080in
+holeDiameter = 0.060in
+holePitch = 0.130in
+csgOverlap = 0.015in
+
+// --- Derived dimensions ---
+outerRadius = intakeDiameter / 2
+flangeRadius = flangeDiameter / 2
+innerRadius = outerRadius - wallThickness
+holeRadius = holeDiameter / 2
+flangeUndersideY = depth - flangeThickness
+holeRowSpacing = holePitch * 0.8660254
+holeCutDepth = bottomThickness + bottomFilletRadius + (2 * csgOverlap)
+
+// Revolved section of the filter cup.  The Y axis is the axis of revolution.
+sectionSketch = sketch(on = XY) {
+  axisWall = line(start = [var 0in, var 0in], end = [var 0in, var 0.16in])
+  innerFloor = line(start = [var 0in, var 0.16in], end = [var 0.305in, var 0.16in])
+  innerBottomFillet = arc(
+    start = [var 0.305in, var 0.16in],
+    end = [var 0.43in, var 0.285in],
+    center = [var 0.305in, var 0.285in],
+  )
+  innerWall = line(start = [var 0.43in, var 0.285in], end = [var 0.43in, var 1in])
+  flangeTop = line(start = [var 0.43in, var 1in], end = [var 0.55in, var 1in])
+  flangeOuter = line(start = [var 0.55in, var 1in], end = [var 0.55in, var 0.92in])
+  flangeUnderside = line(start = [var 0.55in, var 0.92in], end = [var 0.5in, var 0.92in])
+  outerWall = line(start = [var 0.5in, var 0.92in], end = [var 0.5in, var 0.125in])
+  outerBottomFillet = arc(
+    start = [var 0.375in, var 0in],
+    end = [var 0.5in, var 0.125in],
+    center = [var 0.375in, var 0.125in],
+  )
+  bottomFace = line(start = [var 0.375in, var 0in], end = [var 0in, var 0in])
+
+  // Connectivity
+  coincident([axisWall.end, innerFloor.start])
+  coincident([innerFloor.end, innerBottomFillet.start])
+  coincident([innerBottomFillet.end, innerWall.start])
+  coincident([innerWall.end, flangeTop.start])
+  coincident([flangeTop.end, flangeOuter.start])
+  coincident([flangeOuter.end, flangeUnderside.start])
+  coincident([flangeUnderside.end, outerWall.start])
+  coincident([outerWall.end, outerBottomFillet.end])
+  coincident([outerBottomFillet.start, bottomFace.start])
+  coincident([bottomFace.end, axisWall.start])
+  coincident([axisWall.start, ORIGIN])
+
+  // Orthogonal layout
+  vertical(axisWall)
+  horizontal(innerFloor)
+  vertical(innerWall)
+  horizontal(flangeTop)
+  vertical(flangeOuter)
+  horizontal(flangeUnderside)
+  vertical(outerWall)
+  horizontal(bottomFace)
+
+  // Driving radial dimensions
+  horizontalDistance([axisWall.start, outerWall.start]) == outerRadius
+  horizontalDistance([axisWall.start, flangeOuter.start]) == flangeRadius
+  horizontalDistance([axisWall.start, innerWall.start]) == innerRadius
+
+  // Driving vertical dimensions
+  verticalDistance([axisWall.start, innerWall.end]) == depth
+  verticalDistance([axisWall.start, flangeUnderside.start]) == flangeUndersideY
+  verticalDistance([axisWall.start, axisWall.end]) == bottomThickness
+
+  // Quarter-round bottom fillets, radius = 1/8 in.
+  verticalDistance([innerBottomFillet.start, innerBottomFillet.center]) == bottomFilletRadius
+  horizontalDistance([innerBottomFillet.start, innerBottomFillet.center]) == 0in
+  horizontalDistance([innerBottomFillet.center, innerBottomFillet.end]) == bottomFilletRadius
+  verticalDistance([innerBottomFillet.center, innerBottomFillet.end]) == 0in
+
+  verticalDistance([outerBottomFillet.start, outerBottomFillet.center]) == bottomFilletRadius
+  horizontalDistance([outerBottomFillet.start, outerBottomFillet.center]) == 0in
+  horizontalDistance([outerBottomFillet.center, outerBottomFillet.end]) == bottomFilletRadius
+  verticalDistance([outerBottomFillet.center, outerBottomFillet.end]) == 0in
+}
+sectionRegion = region(point = [0.46in, 0.50in], sketch = sectionSketch)
+drainBlank = revolve(sectionRegion, axis = Y)
+hiddenSectionSketch = hide(sectionSketch)
+
+// Hole cutters are sketched on a plane just below the bottom face and extruded upward.
+bottomHolePlane = {
+  origin = [0in, -csgOverlap, 0in],
+  xAxis = [1, 0, 0],
+  yAxis = [0, 0, 1]
+}
+
+rowCenterSketch = sketch(on = bottomHolePlane) {
+  hole = circle(start = [var -0.23in, var 0in], center = [var -0.26in, var 0in])
+  radiusGuide = line(start = [var -0.26in, var 0in], end = [var -0.23in, var 0in], construction = true)
+  coincident([radiusGuide.start, hole.center])
+  coincident([radiusGuide.end, hole.start])
+  horizontal(radiusGuide)
+  distance([radiusGuide.start, radiusGuide.end]) == holeRadius
+  coincident([hole.center, [-2 * holePitch, 0in]])
+}
+rowCenterRegion = region(point = [-2 * holePitch, 0in], sketch = rowCenterSketch)
+rowCenterSeed = extrude(rowCenterRegion, length = -holeCutDepth, method = NEW)
+rowCenterCutters = patternLinear3d(
+  rowCenterSeed,
+  instances = 5,
+  distance = holePitch,
+  axis = X,
+)
+hiddenRowCenterSketch = hide(rowCenterSketch)
+
+rowUpperSketch = sketch(on = bottomHolePlane) {
+  hole = circle(start = [var -0.165in, var 0.1126in], center = [var -0.195in, var 0.1126in])
+  radiusGuide = line(start = [var -0.195in, var 0.1126in], end = [var -0.165in, var 0.1126in], construction = true)
+  coincident([radiusGuide.start, hole.center])
+  coincident([radiusGuide.end, hole.start])
+  horizontal(radiusGuide)
+  distance([radiusGuide.start, radiusGuide.end]) == holeRadius
+  coincident([hole.center, [-1.5 * holePitch, holeRowSpacing]])
+}
+rowUpperRegion = region(point = [-1.5 * holePitch, holeRowSpacing], sketch = rowUpperSketch)
+rowUpperSeed = extrude(rowUpperRegion, length = -holeCutDepth, method = NEW)
+rowUpperCutters = patternLinear3d(
+  rowUpperSeed,
+  instances = 4,
+  distance = holePitch,
+  axis = X,
+)
+hiddenRowUpperSketch = hide(rowUpperSketch)
+
+rowLowerSketch = sketch(on = bottomHolePlane) {
+  hole = circle(start = [var -0.165in, var -0.1126in], center = [var -0.195in, var -0.1126in])
+  radiusGuide = line(start = [var -0.195in, var -0.1126in], end = [var -0.165in, var -0.1126in], construction = true)
+  coincident([radiusGuide.start, hole.center])
+  coincident([radiusGuide.end, hole.start])
+  horizontal(radiusGuide)
+  distance([radiusGuide.start, radiusGuide.end]) == holeRadius
+  coincident([hole.center, [-1.5 * holePitch, -holeRowSpacing]])
+}
+rowLowerRegion = region(point = [-1.5 * holePitch, -holeRowSpacing], sketch = rowLowerSketch)
+rowLowerSeed = extrude(rowLowerRegion, length = -holeCutDepth, method = NEW)
+rowLowerCutters = patternLinear3d(
+  rowLowerSeed,
+  instances = 4,
+  distance = holePitch,
+  axis = X,
+)
+hiddenRowLowerSketch = hide(rowLowerSketch)
+
+rowTopSketch = sketch(on = bottomHolePlane) {
+  hole = circle(start = [var -0.1in, var 0.2252in], center = [var -0.13in, var 0.2252in])
+  radiusGuide = line(start = [var -0.13in, var 0.2252in], end = [var -0.1in, var 0.2252in], construction = true)
+  coincident([radiusGuide.start, hole.center])
+  coincident([radiusGuide.end, hole.start])
+  horizontal(radiusGuide)
+  distance([radiusGuide.start, radiusGuide.end]) == holeRadius
+  coincident([hole.center, [-holePitch, 2 * holeRowSpacing]])
+}
+rowTopRegion = region(point = [-holePitch, 2 * holeRowSpacing], sketch = rowTopSketch)
+rowTopSeed = extrude(rowTopRegion, length = -holeCutDepth, method = NEW)
+rowTopCutters = patternLinear3d(
+  rowTopSeed,
+  instances = 3,
+  distance = holePitch,
+  axis = X,
+)
+hiddenRowTopSketch = hide(rowTopSketch)
+
+rowBottomSketch = sketch(on = bottomHolePlane) {
+  hole = circle(start = [var -0.1in, var -0.2252in], center = [var -0.13in, var -0.2252in])
+  radiusGuide = line(start = [var -0.13in, var -0.2252in], end = [var -0.1in, var -0.2252in], construction = true)
+  coincident([radiusGuide.start, hole.center])
+  coincident([radiusGuide.end, hole.start])
+  horizontal(radiusGuide)
+  distance([radiusGuide.start, radiusGuide.end]) == holeRadius
+  coincident([hole.center, [-holePitch, -2 * holeRowSpacing]])
+}
+rowBottomRegion = region(point = [-holePitch, -2 * holeRowSpacing], sketch = rowBottomSketch)
+rowBottomSeed = extrude(rowBottomRegion, length = -holeCutDepth, method = NEW)
+rowBottomCutters = patternLinear3d(
+  rowBottomSeed,
+  instances = 3,
+  distance = holePitch,
+  axis = X,
+)
+hiddenRowBottomSketch = hide(rowBottomSketch)
+
+holeCutters = flatten([
+  rowCenterCutters,
+  rowUpperCutters,
+  rowLowerCutters,
+  rowTopCutters,
+  rowBottomCutters
+])
+
+perforatedDrain = subtract([drainBlank], tools = holeCutters)
+finishedDrainFilter = appearance(
+  perforatedDrain,
+  color = "#d9d4c4",
+  roughness = 65,
+  metalness = 0,
+)
