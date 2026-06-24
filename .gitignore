@@ -287,3 +287,6 @@ TSWLatexianTemp*
 # No need at the moment, will switch to DVC/LFS if files become too large
 # *.SLDPRT
 # *.SLDDRW
+
+#VSCode
+.history
