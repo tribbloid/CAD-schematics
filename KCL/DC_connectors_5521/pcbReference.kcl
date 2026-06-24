@@ -1,0 +1,131 @@
+// PCB reference model
+// Board with two fastening holes and component keep-out envelopes.
+@settings(defaultLengthUnit = mm, kclVersion = 2.0, experimentalFeatures = allow)
+
+import * from "enclosureParameters.kcl"
+
+boardSketch = sketch(on = XY) {
+  boardCenter = point(at = [var 0mm, var 0mm])
+  lowerEdge = line(start = [var -10mm, var -6mm], end = [var 10mm, var -6mm])
+  rightEdge = line(start = [var 10mm, var -6mm], end = [var 10mm, var 6mm])
+  upperEdge = line(start = [var 10mm, var 6mm], end = [var -10mm, var 6mm])
+  leftEdge = line(start = [var -10mm, var 6mm], end = [var -10mm, var -6mm])
+
+  coincident([boardCenter, ORIGIN])
+  coincident([lowerEdge.end, rightEdge.start])
+  coincident([rightEdge.end, upperEdge.start])
+  coincident([upperEdge.end, leftEdge.start])
+  coincident([leftEdge.end, lowerEdge.start])
+  horizontal(lowerEdge)
+  vertical(rightEdge)
+  horizontal(upperEdge)
+  vertical(leftEdge)
+  horizontalDistance([boardCenter, lowerEdge.start]) == -boardLength / 2
+  verticalDistance([boardCenter, lowerEdge.start]) == -boardWidth / 2
+  horizontalDistance([lowerEdge.start, lowerEdge.end]) == boardLength
+  verticalDistance([rightEdge.start, rightEdge.end]) == boardWidth
+}
+
+boardRegion = region(point = [0mm, 0mm], sketch = boardSketch)
+boardRaw = extrude(boardRegion, length = boardThickness, symmetric = true)
+
+boardHoleSketch = sketch(on = XY) {
+  holeCircle = circle(start = [var 1.2mm, var 0mm], center = [var 0mm, var 0mm])
+  coincident([holeCircle.center, ORIGIN])
+  horizontal([holeCircle.center, holeCircle.start])
+  radius(holeCircle) == screwClearanceDiameter / 2
+}
+
+boardHoleRegion = region(point = [0mm, 0mm], sketch = boardHoleSketch)
+boardHoleCutterLeft = extrude(boardHoleRegion, length = boardThickness + 2 * csgOverlap, symmetric = true)
+  |> translate(x = -mountHoleX, y = mountHoleY, global = true)
+boardHoleCutterRight = clone(boardHoleCutterLeft)
+  |> translate(x = 2 * mountHoleX, global = true)
+boardWithHoles = subtract(
+  boardRaw,
+  tools = [
+    boardHoleCutterLeft,
+    boardHoleCutterRight
+  ],
+)
+
+frontComponentPlane = offsetPlane(XY, offset = boardThickness / 2)
+frontComponentSketch = sketch(on = frontComponentPlane) {
+  lowerEdge = line(start = [var -4mm, var -3.5mm], end = [var 4mm, var -3.5mm])
+  rightEdge = line(start = [var 4mm, var -3.5mm], end = [var 4mm, var 3.5mm])
+  upperEdge = line(start = [var 4mm, var 3.5mm], end = [var -4mm, var 3.5mm])
+  leftEdge = line(start = [var -4mm, var 3.5mm], end = [var -4mm, var -3.5mm])
+  profileCenter = point(at = [var 0mm, var 0mm])
+
+  coincident([profileCenter, ORIGIN])
+  coincident([lowerEdge.end, rightEdge.start])
+  coincident([rightEdge.end, upperEdge.start])
+  coincident([upperEdge.end, leftEdge.start])
+  coincident([leftEdge.end, lowerEdge.start])
+  horizontal(lowerEdge)
+  vertical(rightEdge)
+  horizontal(upperEdge)
+  vertical(leftEdge)
+  horizontalDistance([profileCenter, lowerEdge.start]) == -frontEnvelopeLength / 2
+  verticalDistance([profileCenter, lowerEdge.start]) == -frontEnvelopeWidth / 2
+  horizontalDistance([lowerEdge.start, lowerEdge.end]) == frontEnvelopeLength
+  verticalDistance([rightEdge.start, rightEdge.end]) == frontEnvelopeWidth
+}
+
+frontComponentRegion = region(point = [0mm, 0mm], sketch = frontComponentSketch)
+frontComponentRaw = extrude(frontComponentRegion, length = frontComponentHeight)
+frontComponentReference = appearance(
+  frontComponentRaw,
+  color = componentColor,
+  roughness = 60,
+  opacity = 40,
+)
+
+backComponentPlane = offsetPlane(XY, offset = -boardThickness / 2 - backComponentHeight)
+backComponentSketch = sketch(on = backComponentPlane) {
+  lowerEdge = line(start = [var -5mm, var -3mm], end = [var 5mm, var -3mm])
+  rightEdge = line(start = [var 5mm, var -3mm], end = [var 5mm, var 3mm])
+  upperEdge = line(start = [var 5mm, var 3mm], end = [var -5mm, var 3mm])
+  leftEdge = line(start = [var -5mm, var 3mm], end = [var -5mm, var -3mm])
+  profileCenter = point(at = [var 0mm, var 0mm])
+
+  coincident([profileCenter, ORIGIN])
+  coincident([lowerEdge.end, rightEdge.start])
+  coincident([rightEdge.end, upperEdge.start])
+  coincident([upperEdge.end, leftEdge.start])
+  coincident([leftEdge.end, lowerEdge.start])
+  horizontal(lowerEdge)
+  vertical(rightEdge)
+  horizontal(upperEdge)
+  vertical(leftEdge)
+  horizontalDistance([profileCenter, lowerEdge.start]) == -backEnvelopeLength / 2
+  verticalDistance([profileCenter, lowerEdge.start]) == -backEnvelopeWidth / 2
+  horizontalDistance([lowerEdge.start, lowerEdge.end]) == backEnvelopeLength
+  verticalDistance([rightEdge.start, rightEdge.end]) == backEnvelopeWidth
+}
+
+backComponentRegion = region(point = [0mm, 0mm], sketch = backComponentSketch)
+backComponentRaw = extrude(backComponentRegion, length = backComponentHeight)
+backComponentReference = appearance(
+  backComponentRaw,
+  color = componentColor,
+  roughness = 62,
+  opacity = 35,
+)
+boardReference = appearance(
+  boardWithHoles,
+  color = pcbColor,
+  roughness = 48,
+  opacity = 72,
+)
+
+boardSketchHidden = hide(boardSketch)
+boardHoleSketchHidden = hide(boardHoleSketch)
+frontComponentSketchHidden = hide(frontComponentSketch)
+backComponentSketchHidden = hide(backComponentSketch)
+
+export pcbReferenceBodies = flatten([
+  boardReference,
+  frontComponentReference,
+  backComponentReference
+])

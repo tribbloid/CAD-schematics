@@ -1,0 +1,41 @@
+// PCB enclosure parameters
+// Shared board, shell, hole, and clearance dimensions.
+@settings(defaultLengthUnit = mm, kclVersion = 2.0, experimentalFeatures = allow)
+
+export boardLength = 30mm
+export boardWidth = 20mm
+export boardThickness = 1.57mm
+export frontComponentHeight = 7mm
+export backComponentHeight = 1mm
+export wallThickness = 1.2mm
+export cornerRadius = 4mm
+export boardClearance = 0.4mm
+export topComponentClearance = 0.5mm
+export bottomComponentClearance = 0.3mm
+
+export outerLength = boardLength + 2 * (boardClearance + wallThickness)
+export outerWidth = boardWidth + 2 * (boardClearance + wallThickness)
+export upperInternalHeight = frontComponentHeight + topComponentClearance
+export lowerInternalHeight = backComponentHeight + bottomComponentClearance
+export upperOuterHeight = upperInternalHeight + wallThickness
+export lowerOuterHeight = lowerInternalHeight + wallThickness
+
+export mountHoleDistanceInbetween = 27mm
+export mountHoleX = mountHoleDistanceInbetween / 2
+export mountHoleY = 0mm
+export screwClearanceDiameter = 2.4mm
+export bossOuterDiameter = 5.2mm
+export ventHoleDiameter = 0.9mm
+export ventPitch = 3mm
+export ventRowY = 3.2mm
+export csgOverlap = 0.25mm
+
+export frontEnvelopeLength = 8mm
+export frontEnvelopeWidth = 7mm
+export backEnvelopeLength = 10mm
+export backEnvelopeWidth = 6mm
+
+export upperShellColor = "#cfd6df"
+export lowerShellColor = "#aeb8c4"
+export pcbColor = "#176b3a"
+export componentColor = "#2b2f33"

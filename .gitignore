@@ -40,6 +40,8 @@
 *.synctex.gz(busy)
 *.pdfsync
 
+**/thumbnail.png
+
 ## Build tool directories for auxiliary files
 # latexrun
 latex.out/
