@@ -1,0 +1,17 @@
+// PCB enclosure assembly
+// Two rounded shells clamping the reference PCB on M2.5 mounting centers.
+@settings(defaultLengthUnit = mm, kclVersion = 2.0, experimentalFeatures = allow)
+
+import upperShell from "upperShell.kcl"
+import lowerShell from "lowerShell.kcl"
+import pcbReferenceBodies from "pcbReference.kcl"
+
+upperShellAssembled = upperShell
+lowerShellAssembled = lowerShell
+pcbReferenceAssembled = pcbReferenceBodies
+
+enclosureAssembly = flatten([
+  lowerShellAssembled,
+  pcbReferenceAssembled,
+  upperShellAssembled
+])

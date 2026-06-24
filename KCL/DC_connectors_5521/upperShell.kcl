@@ -1,0 +1,164 @@
+// Upper enclosure shell
+// Rounded top cover with compression posts and M2.5 clearance holes.
+@settings(defaultLengthUnit = mm, kclVersion = 2.0, experimentalFeatures = allow)
+
+import * from "enclosureParameters.kcl"
+
+upperOuterProfile = sketch(on = offsetPlane(XY, offset = upperOuterBottomZ)) {
+  rightSide = line(start = [var 22.2mm, var -5.2mm], end = [var 22.2mm, var 5.2mm])
+  arcTr = arc(start = [var 22.2mm, var 5.2mm], end = [var 16.2mm, var 11.2mm], center = [var 16.2mm, var 5.2mm])
+  topSide = line(start = [var 16.2mm, var 11.2mm], end = [var -16.2mm, var 11.2mm])
+  arcTl = arc(start = [var -16.2mm, var 11.2mm], end = [var -22.2mm, var 5.2mm], center = [var -16.2mm, var 5.2mm])
+  leftSide = line(start = [var -22.2mm, var 5.2mm], end = [var -22.2mm, var -5.2mm])
+  arcBl = arc(start = [var -22.2mm, var -5.2mm], end = [var -16.2mm, var -11.2mm], center = [var -16.2mm, var -5.2mm])
+  bottomSide = line(start = [var -16.2mm, var -11.2mm], end = [var 16.2mm, var -11.2mm])
+  arcBr = arc(start = [var 16.2mm, var -11.2mm], end = [var 22.2mm, var -5.2mm], center = [var 16.2mm, var -5.2mm])
+
+  coincident([rightSide.end, arcTr.start])
+  coincident([arcTr.end, topSide.start])
+  coincident([topSide.end, arcTl.start])
+  coincident([arcTl.end, leftSide.start])
+  coincident([leftSide.end, arcBl.start])
+  coincident([arcBl.end, bottomSide.start])
+  coincident([bottomSide.end, arcBr.start])
+  coincident([arcBr.end, rightSide.start])
+  vertical(rightSide)
+  horizontal(topSide)
+  vertical(leftSide)
+  horizontal(bottomSide)
+  horizontal([arcTr.start, arcTr.center])
+  vertical([arcTr.end, arcTr.center])
+  horizontal([arcTl.end, arcTl.center])
+  vertical([arcTl.start, arcTl.center])
+  horizontal([arcBl.start, arcBl.center])
+  vertical([arcBl.end, arcBl.center])
+  horizontal([arcBr.end, arcBr.center])
+  vertical([arcBr.start, arcBr.center])
+  horizontal([arcTl.center, arcTr.center])
+  horizontal([arcBl.center, arcBr.center])
+  vertical([arcTr.center, arcBr.center])
+  vertical([arcTl.center, arcBl.center])
+  equalRadius([arcTr, arcTl, arcBl, arcBr])
+  radius(arcTr) == cornerRadius
+  horizontalDistance([arcTl.center, arcTr.center]) == outerLength - (2 * cornerRadius)
+  verticalDistance([arcBr.center, arcTr.center]) == outerWidth - (2 * cornerRadius)
+  horizontalDistance([ORIGIN, arcTr.center]) == outerLength / 2 - cornerRadius
+  verticalDistance([ORIGIN, arcTr.center]) == outerWidth / 2 - cornerRadius
+}
+upperOuterRaw = extrude(region(point = [0mm, 0mm], sketch = upperOuterProfile), length = upperOuterHeight, method = NEW)
+hide(upperOuterProfile)
+
+upperCavityProfile = sketch(on = offsetPlane(XY, offset = upperOuterBottomZ - csgOverlap)) {
+  rightSide = line(start = [var 21mm, var -5.2mm], end = [var 21mm, var 5.2mm])
+  arcTr = arc(start = [var 21mm, var 5.2mm], end = [var 16.2mm, var 10mm], center = [var 16.2mm, var 5.2mm])
+  topSide = line(start = [var 16.2mm, var 10mm], end = [var -16.2mm, var 10mm])
+  arcTl = arc(start = [var -16.2mm, var 10mm], end = [var -21mm, var 5.2mm], center = [var -16.2mm, var 5.2mm])
+  leftSide = line(start = [var -21mm, var 5.2mm], end = [var -21mm, var -5.2mm])
+  arcBl = arc(start = [var -21mm, var -5.2mm], end = [var -16.2mm, var -10mm], center = [var -16.2mm, var -5.2mm])
+  bottomSide = line(start = [var -16.2mm, var -10mm], end = [var 16.2mm, var -10mm])
+  arcBr = arc(start = [var 16.2mm, var -10mm], end = [var 21mm, var -5.2mm], center = [var 16.2mm, var -5.2mm])
+
+  coincident([rightSide.end, arcTr.start])
+  coincident([arcTr.end, topSide.start])
+  coincident([topSide.end, arcTl.start])
+  coincident([arcTl.end, leftSide.start])
+  coincident([leftSide.end, arcBl.start])
+  coincident([arcBl.end, bottomSide.start])
+  coincident([bottomSide.end, arcBr.start])
+  coincident([arcBr.end, rightSide.start])
+  vertical(rightSide)
+  horizontal(topSide)
+  vertical(leftSide)
+  horizontal(bottomSide)
+  horizontal([arcTr.start, arcTr.center])
+  vertical([arcTr.end, arcTr.center])
+  horizontal([arcTl.end, arcTl.center])
+  vertical([arcTl.start, arcTl.center])
+  horizontal([arcBl.start, arcBl.center])
+  vertical([arcBl.end, arcBl.center])
+  horizontal([arcBr.end, arcBr.center])
+  vertical([arcBr.start, arcBr.center])
+  horizontal([arcTl.center, arcTr.center])
+  horizontal([arcBl.center, arcBr.center])
+  vertical([arcTr.center, arcBr.center])
+  vertical([arcTl.center, arcBl.center])
+  equalRadius([arcTr, arcTl, arcBl, arcBr])
+  radius(arcTr) == innerCornerRadius
+  horizontalDistance([arcTl.center, arcTr.center]) == innerLength - (2 * innerCornerRadius)
+  verticalDistance([arcBr.center, arcTr.center]) == innerWidth - (2 * innerCornerRadius)
+  horizontalDistance([ORIGIN, arcTr.center]) == innerLength / 2 - innerCornerRadius
+  verticalDistance([ORIGIN, arcTr.center]) == innerWidth / 2 - innerCornerRadius
+}
+upperCavityCut = extrude(region(point = [0mm, 0mm], sketch = upperCavityProfile), length = upperInternalHeight + csgOverlap, method = NEW)
+hide(upperCavityProfile)
+upperShellHollow = subtract([upperOuterRaw], tools = [upperCavityCut])
+
+upperPostLeftProfile = sketch(on = offsetPlane(XY, offset = upperOuterBottomZ)) {
+  guide = line(start = [var 0mm, var 0mm], end = [var 2.9mm, var 0mm], construction = true)
+  c = circle(start = [var 2.9mm, var 0mm], center = [var 0mm, var 0mm])
+  coincident([guide.start, ORIGIN])
+  coincident([c.center, guide.start])
+  coincident([c.start, guide.end])
+  horizontal(guide)
+  horizontalDistance([guide.start, guide.end]) == bossOuterDiameter / 2
+}
+upperPostLeftRaw = extrude(region(point = [0mm, 0mm], sketch = upperPostLeftProfile), length = upperOuterHeight, method = NEW)
+  |> translate(x = -mountHoleX, y = mountHoleY, global = true)
+hide(upperPostLeftProfile)
+upperPostRightRaw = clone(upperPostLeftRaw)
+  |> translate(x = 2 * mountHoleX, global = true)
+
+upperBodyMerged = union([
+  upperShellHollow[0],
+  upperPostLeftRaw,
+  upperPostRightRaw
+])
+
+upperShaftCutProfile = sketch(on = offsetPlane(XY, offset = upperOuterBottomZ - csgOverlap)) {
+  guide = line(start = [var 0mm, var 0mm], end = [var 1.35mm, var 0mm], construction = true)
+  c = circle(start = [var 1.35mm, var 0mm], center = [var 0mm, var 0mm])
+  coincident([guide.start, ORIGIN])
+  coincident([c.center, guide.start])
+  coincident([c.start, guide.end])
+  horizontal(guide)
+  diameter(c) == screwClearanceDiameter
+}
+upperShaftCutLeft = extrude(region(point = [0mm, 0mm], sketch = upperShaftCutProfile), length = upperOuterHeight + 2 * csgOverlap, method = NEW)
+  |> translate(x = -mountHoleX, y = mountHoleY, global = true)
+hide(upperShaftCutProfile)
+upperShaftCutRight = clone(upperShaftCutLeft)
+  |> translate(x = 2 * mountHoleX, global = true)
+
+upperHeadPocketProfile = sketch(on = offsetPlane(XY, offset = upperOuterTopZ - screwHeadPocketDepth)) {
+  guide = line(start = [var 0mm, var 0mm], end = [var 2.7mm, var 0mm], construction = true)
+  c = circle(start = [var 2.7mm, var 0mm], center = [var 0mm, var 0mm])
+  coincident([guide.start, ORIGIN])
+  coincident([c.center, guide.start])
+  coincident([c.start, guide.end])
+  horizontal(guide)
+  diameter(c) == screwHeadPocketDiameter
+}
+upperHeadPocketLeft = extrude(region(point = [0mm, 0mm], sketch = upperHeadPocketProfile), length = screwHeadPocketDepth + csgOverlap, method = NEW)
+  |> translate(x = -mountHoleX, y = mountHoleY, global = true)
+hide(upperHeadPocketProfile)
+upperHeadPocketRight = clone(upperHeadPocketLeft)
+  |> translate(x = 2 * mountHoleX, global = true)
+
+upperShellCut = subtract(
+  upperBodyMerged,
+  tools = [
+    upperShaftCutLeft,
+    upperShaftCutRight,
+    upperHeadPocketLeft,
+    upperHeadPocketRight
+  ],
+)
+upperShellColored = appearance(
+  upperShellCut,
+  color = upperShellColor,
+  roughness = 74,
+  metalness = 0,
+  opacity = 72,
+)
+
+export upperShell = upperShellColored
