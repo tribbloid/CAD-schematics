@@ -18,7 +18,7 @@ export upperInnerWidth = 20mm
 export upperInternalHeight = 7mm
 export lowerInnerLength = 42mm
 export lowerInnerWidth = 20mm
-export lowerInternalHeight = 1mm
+export lowerInternalHeight = 6mm
 export innerLength = upperInnerLength
 export innerWidth = upperInnerWidth
 export innerCornerRadius = cornerRadius - wallThickness
@@ -48,6 +48,7 @@ export ventHoleDiameter = 0.9mm
 export ventPitch = 3mm
 export ventRowY = 3.2mm
 export csgOverlap = 0.25mm
+export endPortDiameter = 10mm
 
 export frontEnvelopeLength = 8mm
 export frontEnvelopeWidth = 7mm

@@ -46,7 +46,6 @@ lowerOuterProfile = sketch(on = offsetPlane(XY, offset = lowerOuterBottomZ)) {
   verticalDistance([ORIGIN, arcTr.center]) == outerWidth / 2 - cornerRadius
 }
 lowerOuterRaw = extrude(region(point = [0mm, 0mm], sketch = lowerOuterProfile), length = lowerOuterHeight, method = NEW)
-hide(lowerOuterProfile)
 
 lowerCavityProfile = sketch(on = offsetPlane(XY, offset = lowerFloorTopZ)) {
   rightSide = line(start = [var 21mm, var -5.2mm], end = [var 21mm, var 5.2mm])
@@ -90,7 +89,6 @@ lowerCavityProfile = sketch(on = offsetPlane(XY, offset = lowerFloorTopZ)) {
   verticalDistance([ORIGIN, arcTr.center]) == innerWidth / 2 - innerCornerRadius
 }
 lowerCavityCut = extrude(region(point = [0mm, 0mm], sketch = lowerCavityProfile), length = lowerOuterHeight - wallThickness + csgOverlap, method = NEW)
-hide(lowerCavityProfile)
 lowerShellHollow = subtract([lowerOuterRaw], tools = [lowerCavityCut])
 
 lowerBossLeftProfile = sketch(on = offsetPlane(XY, offset = lowerOuterBottomZ)) {
@@ -125,13 +123,30 @@ lowerPilotProfile = sketch(on = offsetPlane(XY, offset = lowerPilotStartZ)) {
 }
 lowerPilotCutLeft = extrude(region(point = [0mm, 0mm], sketch = lowerPilotProfile), length = boardBottomZ - lowerPilotStartZ + csgOverlap, method = NEW)
   |> translate(x = -mountHoleX, y = mountHoleY, global = true)
-hide(lowerPilotProfile)
 lowerPilotCutRight = clone(lowerPilotCutLeft)
   |> translate(x = 2 * mountHoleX, global = true)
 
 lowerShellCut = subtract(lowerBodyMerged, tools = [lowerPilotCutLeft, lowerPilotCutRight])
+
+lowerEndPortProfile = sketch(on = offsetPlane(YZ, offset = -outerLength / 2 - csgOverlap)) {
+  centerGuide = line(start = [var 0mm, var 0.785mm], end = [var 5mm, var 0.785mm], construction = true)
+  portCircle = circle(start = [var 5mm, var 0.785mm], center = [var 0mm, var 0.785mm])
+
+  coincident([portCircle.center, centerGuide.start])
+  coincident([portCircle.start, centerGuide.end])
+  horizontal(centerGuide)
+  horizontalDistance([ORIGIN, centerGuide.start]) == 0mm
+  verticalDistance([ORIGIN, centerGuide.start]) == boardTopZ
+  diameter(portCircle) == endPortDiameter
+}
+lowerEndPortLeft = extrude(region(point = [0mm, boardTopZ], sketch = lowerEndPortProfile), length = wallThickness + 2 * csgOverlap, method = NEW)
+hide(lowerEndPortProfile)
+lowerEndPortRight = clone(lowerEndPortLeft)
+  |> translate(x = outerLength - wallThickness, global = true)
+lowerShellWithEndPorts = subtract(lowerShellCut, tools = [lowerEndPortLeft, lowerEndPortRight])
+
 lowerShellColored = appearance(
-  lowerShellCut,
+  lowerShellWithEndPorts,
   color = lowerShellColor,
   roughness = 78,
   metalness = 0,
@@ -139,3 +154,6 @@ lowerShellColored = appearance(
 )
 
 export lowerShell = lowerShellColored
+hidden001 = hide(lowerOuterProfile)
+hidden002 = hide(lowerCavityProfile)
+hidden003 = hide(lowerPilotProfile)

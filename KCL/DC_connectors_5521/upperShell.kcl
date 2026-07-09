@@ -153,8 +153,26 @@ upperShellCut = subtract(
     upperHeadPocketRight
   ],
 )
+
+upperEndPortProfile = sketch(on = offsetPlane(YZ, offset = -outerLength / 2 - csgOverlap)) {
+  centerGuide = line(start = [var 0mm, var 0.785mm], end = [var 5mm, var 0.785mm], construction = true)
+  portCircle = circle(start = [var 5mm, var 0.785mm], center = [var 0mm, var 0.785mm])
+
+  coincident([portCircle.center, centerGuide.start])
+  coincident([portCircle.start, centerGuide.end])
+  horizontal(centerGuide)
+  horizontalDistance([ORIGIN, centerGuide.start]) == 0mm
+  verticalDistance([ORIGIN, centerGuide.start]) == boardTopZ
+  diameter(portCircle) == endPortDiameter
+}
+upperEndPortLeft = extrude(region(point = [0mm, boardTopZ], sketch = upperEndPortProfile), length = wallThickness + 2 * csgOverlap, method = NEW)
+hide(upperEndPortProfile)
+upperEndPortRight = clone(upperEndPortLeft)
+  |> translate(x = outerLength - wallThickness, global = true)
+upperShellWithEndPorts = subtract(upperShellCut, tools = [upperEndPortLeft, upperEndPortRight])
+
 upperShellColored = appearance(
-  upperShellCut,
+  upperShellWithEndPorts,
   color = upperShellColor,
   roughness = 74,
   metalness = 0,
