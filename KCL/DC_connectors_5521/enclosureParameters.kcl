@@ -50,10 +50,10 @@ export ventRowY = 3.2mm
 export csgOverlap = 0.25mm
 export endPortDiameter = 10mm
 
-export frontEnvelopeLength = 8mm
-export frontEnvelopeWidth = 7mm
-export backEnvelopeLength = 10mm
-export backEnvelopeWidth = 6mm
+export frontEnvelopeLength = 11.4mm
+export frontEnvelopeWidth = 20mm
+export backEnvelopeLength = 11.4mm
+export backEnvelopeWidth = 20mm
 
 export upperShellColor = "#cfd6df"
 export lowerShellColor = "#aeb8c4"
