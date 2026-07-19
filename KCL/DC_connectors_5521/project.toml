@@ -1,8 +1,6 @@
-default_file = "project.toml"
-title = "DC_connectors_5521"
-
 [settings.meta]
 id = "0def668b-30a0-4efc-9d80-e9588c2b8184"
 
 [settings.app]
+
 [settings.modeling]

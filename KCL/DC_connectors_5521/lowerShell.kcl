@@ -1,5 +1,5 @@
 // Lower enclosure shell
-// Rounded base with blind M2.5 pilot bosses aligned to the PCB holes.
+// Rounded base with blind M2.5 pilot bosses and underside hex-nut traps.
 @settings(defaultLengthUnit = mm, kclVersion = 2.0, experimentalFeatures = allow)
 
 import * from "enclosureParameters.kcl"
@@ -128,6 +128,60 @@ lowerPilotCutRight = clone(lowerPilotCutLeft)
 
 lowerShellCut = subtract(lowerBodyMerged, tools = [lowerPilotCutLeft, lowerPilotCutRight])
 
+lowerNutPocketProfile = sketch(on = offsetPlane(XY, offset = lowerOuterBottomZ - csgOverlap)) {
+  side1 = line(start = [var 2.88675mm, var 0mm], end = [var 1.443375mm, var 2.5mm])
+  side2 = line(start = [var 1.443375mm, var 2.5mm], end = [var -1.443375mm, var 2.5mm])
+  side3 = line(start = [var -1.443375mm, var 2.5mm], end = [var -2.88675mm, var 0mm])
+  side4 = line(start = [var -2.88675mm, var 0mm], end = [var -1.443375mm, var -2.5mm])
+  side5 = line(start = [var -1.443375mm, var -2.5mm], end = [var 1.443375mm, var -2.5mm])
+  side6 = line(start = [var 1.443375mm, var -2.5mm], end = [var 2.88675mm, var 0mm])
+  centerGuide = line(start = [var 0mm, var 0mm], end = [var 2.88675mm, var 0mm], construction = true)
+  circumference = circle(start = [var 2.88675mm, var 0mm], center = [var 0mm, var 0mm], construction = true)
+
+  coincident([side1.end, side2.start])
+  coincident([side2.end, side3.start])
+  coincident([side3.end, side4.start])
+  coincident([side4.end, side5.start])
+  coincident([side5.end, side6.start])
+  coincident([side6.end, side1.start])
+  coincident([centerGuide.start, ORIGIN])
+  coincident([centerGuide.end, side1.start])
+  coincident([circumference.center, ORIGIN])
+  coincident([circumference.start, centerGuide.end])
+  coincident([side2.start, circumference])
+  coincident([side3.start, circumference])
+  coincident([side4.start, circumference])
+  coincident([side5.start, circumference])
+  coincident([side6.start, circumference])
+
+  horizontal(centerGuide)
+  horizontal(side2)
+  horizontal(side5)
+  equalLength([
+    side1,
+    side2,
+    side3,
+    side4,
+    side5,
+    side6
+  ])
+  radius(circumference) == m25NutPocketCircumradius
+  verticalDistance([side2.start, side5.start]) == m25NutPocketAcrossFlats
+}
+lowerNutPocketCutLeft = extrude(region(point = [0mm, 0mm], sketch = lowerNutPocketProfile), length = m25NutPocketDepth + csgOverlap, method = NEW)
+  |> translate(x = -mountHoleX, y = mountHoleY, global = true)
+lowerNutPocketCutRight = clone(lowerNutPocketCutLeft)
+  |> translate(x = 2 * mountHoleX, global = true)
+
+lowerShellWithNutPockets = subtract(
+  lowerShellCut,
+  tools = [
+    lowerNutPocketCutLeft,
+    lowerNutPocketCutRight
+  ],
+)
+hide(lowerNutPocketProfile)
+
 lowerEndPortProfile = sketch(on = offsetPlane(YZ, offset = -outerLength / 2 - csgOverlap)) {
   centerGuide = line(start = [var 0mm, var 0.785mm], end = [var 5mm, var 0.785mm], construction = true)
   portCircle = circle(start = [var 5mm, var 0.785mm], center = [var 0mm, var 0.785mm])
@@ -143,7 +197,7 @@ lowerEndPortLeft = extrude(region(point = [0mm, boardTopZ], sketch = lowerEndPor
 hide(lowerEndPortProfile)
 lowerEndPortRight = clone(lowerEndPortLeft)
   |> translate(x = outerLength - wallThickness, global = true)
-lowerShellWithEndPorts = subtract(lowerShellCut, tools = [lowerEndPortLeft, lowerEndPortRight])
+lowerShellWithEndPorts = subtract(lowerShellWithNutPockets, tools = [lowerEndPortLeft, lowerEndPortRight])
 
 lowerShellColored = appearance(
   lowerShellWithEndPorts,
